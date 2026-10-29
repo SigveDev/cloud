@@ -20,6 +20,7 @@ This README describes the intended configuration and the setup procedure develop
 
 | Task | Guide |
 | --- | --- |
+| Deploy another Vite + TypeScript app | [New app deployment guide](https://github.com/SigveDev/cluster/blob/main/docs/DEPLOY-NEW-APPS.md) |
 | Configure Argo read access and cross-repo dispatch tokens | [GitHub token setup](docs/GITHUB-TOKENS.md) |
 | Keep container images private | [Private GHCR access](docs/PRIVATE-REGISTRY.md) |
 | Deploy the first application | [Hello-world deployment walkthrough](docs/DEPLOY-HELLO-WORLD.md) |
@@ -49,7 +50,7 @@ Public VPS/client addresses and actual credentials are intentionally excluded. `
 | Management | Headlamp at `cluster.sigve.cloud` | Installation and login instructions supplied; final browser login not confirmed |
 | Deployments | Argo CD at `argo.sigve.cloud` | Installation and login instructions supplied; final browser login not confirmed |
 | Application namespace | `launchpad` | Selected; replaces the unused proposed name `learning` |
-| Welcome application | Docker build, GHCR, Kubernetes manifests, Argo bootstrap | Source/configuration created here; not yet built by GitHub or deployed by this workspace |
+| Welcome application | Docker build, GHCR, Kubernetes manifests, Argo bootstrap | User reported the HTTPS app working after Argo deployment and DNS troubleshooting; live state not independently inspected |
 
 ## Architecture
 
@@ -391,3 +392,9 @@ Keep OS security updates, planned reboots, K3s upgrades, chart upgrades, certifi
 - [GHCR permissions and visibility](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry)
 - [NGINX unprivileged image](https://github.com/nginx/docker-nginx-unprivileged)
 - [cert-manager compatibility](https://cert-manager.io/docs/releases/)
+
+## Deploying new applications
+
+Use the separate [Get started guide](https://github.com/SigveDev/get-started) and [Vite + TypeScript template](https://github.com/SigveDev/vite-ts-template). Local projects are `E:\Github\get-started` and `E:\Github\vite-ts-template`. The guide covers application onboarding on the existing cloud: build/publish, public or private packages, scoped credentials, app manifests, per-app Traefik access, digest promotion, Argo registration, and verification.
+
+See the [cluster walkthrough](https://github.com/SigveDev/cluster/blob/main/docs/DEPLOY-NEW-APPS.md) for the exact cluster changes. The shared `Promote app` workflow supports registered new apps; the original hello-world promotion workflow remains available. Prepared app registrations are `get-started` and `vite-starter`, both initially private. Their manifests and workflows are local changes until committed/pushed; no live apply was performed here.

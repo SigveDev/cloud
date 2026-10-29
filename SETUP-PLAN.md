@@ -213,7 +213,7 @@ Keep short notes for each exercise: prediction, manifest change, observed behavi
 ## Next verification and implementation steps
 
 - Confirm the provider firewall attachment, node/system Pod health, GUI logins, and trusted certificates; these have not been independently inspected by this workspace.
-- Make the first Git commit/push, check Actions and GHCR visibility, bootstrap both Argo Applications from the cluster repo, and verify `hello.sigve.cloud` using [the deployment walkthrough](docs/DEPLOY-HELLO-WORLD.md).
+- The user has reported hello-world working. For new apps, follow the [application onboarding walkthrough](https://github.com/SigveDev/cluster/blob/main/docs/DEPLOY-NEW-APPS.md) and the separate Vite + TypeScript template. Verify each app build, package access, image digest, Argo registration, rollout, and HTTPS independently.
 - Record successful live checks in [setup history](docs/SETUP-HISTORY.md), keeping credentials and actual infrastructure addresses out of Git.
 - Decide whether important live apps will share the lab cluster; use a separate environment for disruptive experiments when needed.
 
