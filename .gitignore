@@ -1,0 +1,24 @@
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.pfx
+*.p12
+*.kubeconfig
+kubeconfig
+kubeconfig.*
+secrets/
+.secrets/
+*-credentials.yaml
+
+# Local tools, rendered manifests, and editor files
+.tools/
+.tmp/
+rendered*.yaml
+.vscode/
+.idea/
+__pycache__/
+.DS_Store
+Thumbs.db
