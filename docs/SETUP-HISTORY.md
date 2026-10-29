@@ -70,3 +70,7 @@ Runtime smoke tests are included in GitHub Actions. Once the first release is de
 - Browser automation could not confidently verify Chrome's URL and was stopped without submitting forms. The new remotes were subsequently created through authenticated GitHub API access, not through the stopped browser session.
 - App publication and cluster promotion use separate GitHub tokens/permissions. Automatic cross-repo dispatch is optional and requires the user-provisioned CLUSTER_REPO_TOKEN; no actual credential was created or stored in Git.
 - Network policies deny launchpad Pod ingress/egress by default and allow DNS, Traefik app ingress, and certificate solver validation. Live enforcement and certificate renewal remain unverified until the user applies and tests them.
+
+## Private package follow-up
+
+The user supplied a promotion failure showing an anonymous GHCR 401 and asked to avoid making packages public. The cluster workflow now requests packages read and logs in using its GITHUB_TOKEN. The Deployment references an out-of-band ghcr-pull Secret, and an interactive helper provisions it on the VPS using a separate classic read:packages token. Package Actions-access configuration and credential provisioning are user steps, not actions already performed here. No package visibility was changed, and no real token was read or stored by this implementation.

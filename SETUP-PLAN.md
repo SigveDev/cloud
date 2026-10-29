@@ -163,7 +163,7 @@ The user requested independent projects under `E:\Github`:
 
 1. Commit/push the cluster repository, then commit/push the standalone app to its existing remote.
 2. App CI builds/smoke-tests and publishes `ghcr.io/sigvedev/hello-world` for the VPS's Linux/amd64 architecture.
-3. Promote the digest with the cluster repo's manual workflow first. It validates the fixed public image and records only the desired image in Git. Make the GHCR demo package public, or deliberately configure private registry access.
+3. Promote the digest with the cluster repo's manual workflow first. It authenticates with its GITHUB_TOKEN, checks the fixed image, and records the desired digest in Git. Keep GHCR private: grant cluster package Read access and create the namespace ghcr-pull Secret using a separate classic read:packages credential.
 4. Optionally configure `CLUSTER_REPO_TOKEN` in the app repository, scoped to cluster with Actions write, so successful app builds can dispatch promotion. The app's GITHUB_TOKEN cannot write another repository.
 5. Argo reads only the cluster repository, using two scoped Applications: `launchpad-networking` and `hello-world`. Start with manual sync.
 6. Review and verify namespace policy (DNS, Traefik ingress, ACME solver allowance, denied general egress), then app rollout and actual HTTPS.

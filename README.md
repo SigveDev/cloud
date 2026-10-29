@@ -20,6 +20,8 @@ This README describes the intended configuration and the setup procedure develop
 
 | Task | Guide |
 | --- | --- |
+| Configure Argo read access and cross-repo dispatch tokens | [GitHub token setup](docs/GITHUB-TOKENS.md) |
+| Keep container images private | [Private GHCR access](docs/PRIVATE-REGISTRY.md) |
 | Deploy the first application | [Hello-world deployment walkthrough](docs/DEPLOY-HELLO-WORLD.md) |
 | Understand the infrastructure and learning milestones | [Setup plan](SETUP-PLAN.md) |
 | Rebuild Ubuntu access and install K3s | [VPS bootstrap](docs/VPS-BOOTSTRAP.md) |
@@ -266,9 +268,9 @@ The publish job uses `GITHUB_TOKEN` with `contents: read` and `packages: write`.
 
 ### Infrastructure repository: cluster
 
-`.github/workflows/promote-hello-world.yml` accepts an image digest and optional app source commit through workflow dispatch. It validates both formats, checks the fixed public GHCR image exists, edits only `apps/hello-world/deployment.yaml`, and commits that digest to this repo's `main`. It uses this repo's own `GITHUB_TOKEN` with `contents: write`.
+`.github/workflows/promote-hello-world.yml` accepts an image digest and optional app source commit through workflow dispatch. It validates both formats, authenticates to GHCR and checks the fixed private image exists, edits only `apps/hello-world/deployment.yaml`, and commits that digest to this repo's `main`. It uses this repo's own `GITHUB_TOKEN` with `contents: write` and `packages: read`; package Actions access must grant this repo Read permission.
 
-For the first release, manually run **Promote hello-world** in this repo's Actions tab using the digest from the app workflow. It assumes the demo package is public. Private packages require deliberate registry credentials/access in both the cluster workflow and Kubernetes.
+For the first release, manually run **Promote hello-world** in this repo's Actions tab using the digest from the app workflow. The package can remain private. Grant cluster Read access under the package's Manage Actions access and create the node image-pull Secret before deployment.
 
 For automatic handoff, store a fine-grained token as **`CLUSTER_REPO_TOKEN` in the hello-world repo's Actions secrets**. Select only `SigveDev/cluster`, with **Actions: write**; metadata access is automatic. This token requests a workflow dispatch in cluster, not a direct Git write. It can execute cluster workflows, so restrict who can modify the app workflow and use an expiry/rotation plan. A GitHub App installation token is an alternative.
 
@@ -276,11 +278,15 @@ Without this secret, app publication still succeeds and clearly reports that pro
 
 `.github/workflows/validate.yml` renders both the app and networking Kustomize roots for pushes and PRs. GitHub generally suppresses new Actions runs from bot pushes made with `GITHUB_TOKEN`; Argo still observes their Git commits. Manifest validation is not live network verification.
 
-### Registry visibility
+### Private registry access
 
-GHCR packages are private initially. For this public demo, make `hello-world` public after its first publication so the cluster promotion check and K3s can pull anonymously. A public Git repo does not make its package public automatically. No tokens are stored in YAML.
+The GHCR package stays private. The cluster workflow logs in using its built-in GITHUB_TOKEN with packages read permission; grant **SigveDev/cluster → Read** under the hello-world package's **Manage Actions access**.
 
-The initial deployment reference is a bootstrap `:latest` placeholder. Complete a digest promotion before the first app sync. Argo deploys the immutable digest from this repository, never builds an image, and never fetches HTML from a ConfigMap.
+Kubernetes uses a separate classic PAT with **read:packages**, stored only in the namespace-scoped **ghcr-pull** Secret. The Deployment already references it. Run the interactive `scripts/create-ghcr-pull-secret.sh` helper on the VPS; it streams the Secret to the API without placing the token in command arguments or Git.
+
+See [private registry setup](docs/PRIVATE-REGISTRY.md). The fine-grained Argo Git-read token and CLUSTER_REPO_TOKEN remain unchanged; neither is a GHCR credential. Public image visibility is optional, not required.
+
+The initial image reference is a bootstrap `:latest` placeholder. Complete image promotion and create ghcr-pull before the first app sync. Argo deploys the immutable image from the cluster repo and does not build it.
 
 ## First deployment
 
@@ -288,7 +294,7 @@ Follow [the deployment walkthrough](docs/DEPLOY-HELLO-WORLD.md):
 
 1. Commit/push `E:\Github\cluster` to it on `main`.
 2. Commit/push the independent app project `E:\Github\hello-world` to `SigveDev/hello-world`.
-3. Wait for the app image build and make its GHCR package public.
+3. Wait for the image build, grant cluster package read access, and create the node pull Secret using the private-registry guide.
 4. Run **Promote hello-world** in cluster with the published digest; confirm its manifest commit.
 5. Point `hello.sigve.cloud` to `<VPS_PUBLIC_IP>` and verify DNS privately.
 6. Give Argo read-only access to cluster if it is private, and bootstrap `argocd/bootstrap.yaml` from the VPS.
@@ -342,7 +348,7 @@ Run interactive diagnostics without pasting credentials, kubeconfigs, or raw Sec
 | Image published but no digest commit | Branch protection, bot write permission, concurrent Git push, skipped stale-source promotion |
 | Argo repository connection fails | Actual repository URL, private-repo read credentials, host-key validation for SSH |
 | Argo rejects a resource | AppProject destination and resource allowlist; confirm source path |
-| ImagePullBackOff | GHCR package public visibility or namespace imagePullSecret, published digest |
+| ImagePullBackOff | Namespace ghcr-pull Secret, token expiry/package access, published digest |
 | Pod Pending | Node readiness, resource requests, available capacity |
 | Pod CrashLoopBackOff | Logs, image architecture, Nginx writable `/tmp`, security settings |
 | HTTPS certificate pending | DNS A/AAAA, public port 80, issuer readiness, ACME Orders/Challenges |

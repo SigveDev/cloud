@@ -42,11 +42,16 @@ ghcr.io/sigvedev/hello-world@sha256:<PUBLISHED_DIGEST>
 
 The actual digest is release metadata, not a secret. No Kubernetes manifest is written in the app repo.
 
-## 3. Make the demo package pullable
+## 3. Configure private image access
 
-GHCR initially creates private packages. For this public welcome image, change the **hello-world GHCR package** visibility to Public after its first publication. This is independent of the private Git repository's visibility.
+Keep the package Private. Follow [private registry setup](PRIVATE-REGISTRY.md):
 
-The supplied promotion workflow verifies the image anonymously, and the Kubernetes Deployment assumes a public image. If retaining a private package, provision explicit read access for the cluster workflow and an imagePullSecret in launchpad, then reference it in the Deployment. Do not commit that Secret's credential.
+1. Under the hello-world package's Manage Actions access, grant SigveDev/cluster Read access.
+2. The updated cluster workflow logs in to GHCR with its GITHUB_TOKEN and packages read permission.
+3. Create a separate classic PAT with read:packages, and run scripts/create-ghcr-pull-secret.sh on the VPS to provision the launchpad/ghcr-pull Secret without storing its value in Git.
+4. The Deployment already references that Secret. Keep the Argo Git-read token and CLUSTER_REPO_TOKEN separate.
+
+Commit/push the updated workflow before testing and start a new promotion run on main; re-running an older run may reuse its older workflow definition.
 
 ## 4. Promote the first image in cluster
 
@@ -56,7 +61,7 @@ Open **SigveDev/cluster → Actions → Promote hello-world → Run workflow**:
 - image_digest: the full `sha256:...` value from the app workflow.
 - source_sha: optional app commit SHA.
 
-The workflow validates the digest, checks the fixed public image exists, updates only `apps/hello-world/deployment.yaml`, and creates a normal bot commit on cluster main. It does not run kubectl apply against your server.
+The workflow validates the digest, authenticates and checks the fixed private image exists, updates only `apps/hello-world/deployment.yaml`, and creates a normal bot commit on cluster main. It does not run kubectl apply against your server.
 
 Confirm the Deployment now uses an immutable reference. If branch rules block bot commits, use a PR-based promotion flow; do not force-push or broadly weaken protection. If a concurrent Git update rejects the push, rerun promotion on current main.
 
