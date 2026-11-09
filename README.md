@@ -20,6 +20,10 @@ This README describes the intended configuration and the setup procedure develop
 
 | Task | Guide |
 | --- | --- |
+| Plan Sloyer, the GitHub-to-cloud deployment dashboard | [Sloyer implementation plan](docs/SLOYER-PLAN.md) |
+| Plan Hauth, app registrations, hosted login, and Sloyer authentication | [Hauth implementation plan](docs/HAUTH-PLAN.md) |
+| Choose databases for Hauth, Sloyer, and deployed apps | [Database strategy and recommendation](docs/DATABASE-STRATEGY.md) |
+| Review the new platform apps and remaining deployment prerequisites | [Hauth/Sloyer implementation status](docs/PLATFORM-IMPLEMENTATION.md) |
 | Deploy another Vite + TypeScript app | [New app deployment guide](https://github.com/SigveDev/cluster/blob/main/docs/DEPLOY-NEW-APPS.md) |
 | Configure Argo read access and cross-repo dispatch tokens | [GitHub token setup](docs/GITHUB-TOKENS.md) |
 | Keep container images private | [Private GHCR access](docs/PRIVATE-REGISTRY.md) |
